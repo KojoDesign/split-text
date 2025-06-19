@@ -1,40 +1,18 @@
 import type { SplitTextOptions } from "./types";
-import { resolveElements } from "./utils";
+import { createSpan, findTextElements, resolveElements } from "./utils";
 
 /**
- * Creates a span element with specified class and optional index attribute
+ * Splits text content of a single element into characters, words, and lines.
  */
-function createSpan(className: string, index?: number) {
-  const span = document.createElement("span");
-  if (className) span.className = className;
-  if (index !== undefined) span.dataset.index = index.toString();
-  span.style.display = "inline-block";
-  return span;
-}
-
-/**
- * Splits text content of an element into characters, words, and lines.
- *
- * @param elementOrSelector - The element or selector of the element to split. If multiple elements are found, only the first will be split.
- * @param options - Options.
- * @returns An object with the chars, words, and lines DOM nodes as lists.
- */
-function splitText(
-  elementOrSelector: HTMLElement | string,
+export function splitter(
+  element: Element,
   {
     splitBy = " ",
     wordClass = "split-word",
     lineClass = "split-line",
     charClass = "split-char",
-  }: SplitTextOptions = {},
+  }: Omit<SplitTextOptions, "recursive"> = {},
 ) {
-  // Resolve the element
-  const [element] = resolveElements(elementOrSelector);
-
-  if (!element) {
-    throw new Error("Element not found");
-  }
-
   const text = element?.textContent || "";
 
   element.setAttribute("aria-label", text);
@@ -151,5 +129,3 @@ function splitText(
 
   return splitElements;
 }
-
-export { splitText };

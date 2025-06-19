@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { splitText } from "../src/split-text";
+import { splitText } from "../src/index";
 
 describe("splitText - Integration Tests", () => {
   let container: HTMLElement;

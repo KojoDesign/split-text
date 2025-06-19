@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { splitText } from "../src/split-text";
+import { splitText } from "../src/index";
 
 describe("splitText", () => {
   let container: HTMLElement;
@@ -330,6 +330,173 @@ describe("splitText", () => {
       expect(result.chars[0]).toBeInstanceOf(HTMLElement);
       expect(result.words[0]).toBeInstanceOf(HTMLElement);
       expect(result.lines[0]).toBeInstanceOf(HTMLElement);
+    });
+  });
+
+  describe("recursive text splitting", () => {
+    it("should split text in multiple paragraph elements while preserving structure", () => {
+      container.id = "multi-paragraph-container";
+      container.innerHTML = `
+        <p>First paragraph</p>
+        <p>Second paragraph</p>
+        <p>Third paragraph</p>
+      `;
+
+      const result = splitText("#multi-paragraph-container", {
+        recursive: true,
+      });
+
+      // Should have split all paragraphs
+      expect(result.words.length).toBeGreaterThan(3); // At least 6 words total
+      expect(result.chars.length).toBeGreaterThan(0);
+      expect(result.lines.length).toBeGreaterThan(0);
+
+      // Original paragraph structure should be preserved
+      const paragraphs = container.querySelectorAll("p");
+      expect(paragraphs).toHaveLength(3);
+
+      // Each paragraph should contain split elements
+      paragraphs.forEach((p) => {
+        const words = p.querySelectorAll(".split-word");
+        expect(words.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("should work with nested elements and preserve structure", () => {
+      container.id = "nested-container";
+      container.innerHTML = `
+        <div>
+          <h1>Main Title</h1>
+          <div>
+            <p>Nested paragraph</p>
+            <span>Nested span</span>
+          </div>
+        </div>
+      `;
+
+      const result = splitText("#nested-container", { recursive: true });
+
+      expect(result.words.length).toBeGreaterThan(0);
+
+      // Original structure should be preserved
+      expect(container.querySelector("h1")).toBeTruthy();
+      expect(container.querySelector("p")).toBeTruthy();
+      expect(container.querySelector("span")).toBeTruthy();
+
+      // Text should be split in each element
+      const h1 = container.querySelector("h1");
+      const p = container.querySelector("p");
+      const span = container.querySelector("span");
+
+      expect(h1?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+      expect(p?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+      expect(span?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+    });
+
+    it("should split all text-containing elements in recursive mode", () => {
+      container.id = "all-elements-container";
+      container.innerHTML = `
+        <p>First paragraph</p>
+        <span>Span text</span>
+        <div>Div text</div>
+      `;
+
+      const result = splitText("#all-elements-container", {
+        recursive: true,
+      });
+
+      // Should split all text-containing elements
+      const p = container.querySelector("p");
+      const span = container.querySelector("span");
+      const div = container.querySelector("div");
+
+      expect(p?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+      expect(span?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+      expect(div?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+    });
+
+    it("should handle mixed content with text nodes and elements", () => {
+      container.id = "mixed-container";
+      container.innerHTML = `
+        <div>
+          Some text before
+          <p>Paragraph text</p>
+          Some text after
+          <span>Span text</span>
+        </div>
+      `;
+
+      const result = splitText("#mixed-container", { recursive: true });
+
+      expect(result.words.length).toBeGreaterThan(0);
+
+      // Elements with text should be split
+      const p = container.querySelector("p");
+      const span = container.querySelector("span");
+
+      expect(p?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+      expect(span?.querySelectorAll(".split-word").length).toBeGreaterThan(0);
+    });
+
+    it("should handle empty elements gracefully in recursive mode", () => {
+      container.id = "empty-recursive-container";
+      container.innerHTML = `
+        <p></p>
+        <p>   </p>
+        <p>Valid text</p>
+      `;
+
+      const result = splitText("#empty-recursive-container", {
+        recursive: true,
+      });
+
+      // Should only split the paragraph with actual text
+      expect(result.words.length).toBe(2); // "Valid" and "text"
+
+      const paragraphs = container.querySelectorAll("p");
+      const validParagraph = paragraphs[2];
+      expect(validParagraph?.querySelectorAll(".split-word").length).toBe(2);
+    });
+
+    it("should maintain original behavior when recursive is false", () => {
+      container.id = "non-recursive-container";
+      container.innerHTML = `
+        <p>First paragraph</p>
+        <p>Second paragraph</p>
+      `;
+
+      const result = splitText("#non-recursive-container", {
+        recursive: false,
+      });
+
+      // Should treat the entire container as one text block
+      // The textContent will be "First paragraph Second paragraph" (with spaces)
+      expect(result.words.length).toBe(5); // "First", "paragraph", "Second", "paragraph"
+
+      // Original paragraph structure should be replaced
+      const paragraphs = container.querySelectorAll("p");
+      expect(paragraphs).toHaveLength(0);
+    });
+
+    it("should aggregate results from multiple elements correctly", () => {
+      container.id = "aggregate-container";
+      container.innerHTML = `
+        <p>One two</p>
+        <p>Three four</p>
+      `;
+
+      const result = splitText("#aggregate-container", { recursive: true });
+
+      expect(result.words).toHaveLength(4);
+      expect(result.chars.length).toBeGreaterThan(0);
+      expect(result.lines.length).toBeGreaterThan(0);
+
+      // Verify that all words are accessible in the aggregated result
+      const wordTexts = result.words.map((word) => word.textContent);
+      expect(wordTexts).toContain("One");
+      expect(wordTexts).toContain("two");
+      expect(wordTexts).toContain("Three");
+      expect(wordTexts).toContain("four");
     });
   });
 });

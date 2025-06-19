@@ -21,4 +21,5 @@ export interface SplitTextOptions {
   charClass?: string;
   wordClass?: string;
   lineClass?: string;
+  recursive?: boolean;
 }
