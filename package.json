@@ -10,7 +10,12 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
+    "prepare": "pnpm build",
     "build": "tsup src/index.ts --format esm,cjs,iife --dts --out-dir dist",
     "test": "vitest --no-watch",
     "test:watch": "vitest",
