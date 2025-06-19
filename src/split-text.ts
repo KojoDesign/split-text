@@ -1,12 +1,5 @@
-import { resolveElements } from "motion-dom";
-import { invariant } from "motion-utils";
-
-interface SplitTextOptions {
-  splitBy?: string;
-  charClass?: string;
-  wordClass?: string;
-  lineClass?: string;
-}
+import type { SplitTextOptions } from "./types";
+import { resolveElements } from "./utils";
 
 /**
  * Creates a span element with specified class and optional index attribute
@@ -38,13 +31,11 @@ function splitText(
   // Resolve the element
   const [element] = resolveElements(elementOrSelector);
 
-  invariant(Boolean(element), "Element not found");
-
-  const text = element?.textContent || "";
-
   if (!element) {
     throw new Error("Element not found");
   }
+
+  const text = element?.textContent || "";
 
   element.setAttribute("aria-label", text);
 
