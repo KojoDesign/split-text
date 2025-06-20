@@ -1,5 +1,5 @@
 import type { SplitTextOptions } from "./types";
-import { createSpan, findTextElements, resolveElements } from "./utils";
+import { createSpan } from "./utils";
 
 /**
  * Splits text content of a single element into characters, words, and lines.

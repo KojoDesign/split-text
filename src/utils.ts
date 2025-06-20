@@ -8,7 +8,7 @@ import type {
 export function resolveElements(
   elementOrSelector: ElementOrSelector,
   scope?: AnimationScope,
-  selectorCache?: SelectorCache,
+  selectorCache?: SelectorCache
 ): Element[] {
   if (elementOrSelector instanceof EventTarget) {
     return [elementOrSelector];
@@ -38,7 +38,11 @@ export function resolveElements(
  * @param inline - Whether to use 'inline' instead of 'inline-block' for display style
  * @returns The created span element
  */
-export function createSpan(className: string, index?: number, inline?: boolean) {
+export function createSpan(
+  className: string,
+  index?: number,
+  inline?: boolean
+) {
   const span = document.createElement("span");
   if (className) span.className = className;
   if (index !== undefined) span.dataset.index = index.toString();
@@ -51,7 +55,7 @@ export function createSpan(className: string, index?: number, inline?: boolean) 
  */
 export function isTextOnlyElement(element: Element): boolean {
   return Array.from(element.childNodes).every(
-    (node) => node.nodeType === Node.TEXT_NODE,
+    (node) => node.nodeType === Node.TEXT_NODE
   );
 }
 
@@ -66,23 +70,32 @@ export function findTextElements(
   filter?: (node: Element) => boolean
 ): Element[] {
   const textElements: Element[] = [];
-  
-  function traverse(element: Element) {
-    // Check if element contains only text and has non-empty content
-    if (isTextOnlyElement(element) && element.textContent?.trim()) {
-      // Only add the element if it passes the filter (or if no filter is provided)
-      if (!filter || filter(element)) {
-        textElements.push(element);
-      }
-    } else { 
-      // Recursively traverse child elements
-      for (const child of Array.from(element.children)) {
-        traverse(child);
-      }
-    }
-  }
 
-  traverse(container);
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
+    acceptNode: (node: Node) => {
+      const element = node as Element;
+
+      // Apply user filter first if provided
+      if (filter && !filter(element)) {
+        return NodeFilter.FILTER_REJECT;
+      }
+
+      // Check if element contains only text and has non-empty content
+      if (isTextOnlyElement(element) && element.textContent?.trim()) {
+        return NodeFilter.FILTER_ACCEPT;
+      }
+
+      // Skip this node but continue traversing its children
+      return NodeFilter.FILTER_SKIP;
+    },
+  });
+
+  let currentNode = walker.nextNode();
+
+  while (currentNode) {
+    textElements.push(currentNode as Element);
+    currentNode = walker.nextNode();
+  }
 
   return textElements;
 }
