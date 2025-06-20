@@ -8,11 +8,15 @@ export function splitter(
   element: Element,
   {
     splitBy = " ",
-    wordClass = "split-word",
-    lineClass = "split-line",
-    charClass = "split-char",
+    classNames = {},
+    inline,
   }: Omit<SplitTextOptions, "recursive"> = {},
 ) {
+  // Use classNames with defaults if properties are not provided
+  const wordClass = classNames.word ?? "split-word";
+  const lineClass = classNames.line ?? "split-line";
+  const charClass = classNames.char ?? "split-char";
+
   const text = element?.textContent || "";
 
   element.setAttribute("aria-label", text);
@@ -40,14 +44,14 @@ export function splitter(
       continue;
     }
 
-    const wordSpan = createSpan(wordClass, wordIndex);
+    const wordSpan = createSpan(wordClass, wordIndex, inline);
 
     splitElements.words.push(wordSpan);
     wordElements.push(wordSpan);
 
     // Add characters to the word
     for (const [charIndex, char] of Array.from(word).entries()) {
-      const charSpan = createSpan(charClass, charIndex);
+      const charSpan = createSpan(charClass, charIndex, inline);
       charSpan.textContent = char;
       wordSpan.appendChild(charSpan);
       splitElements.chars.push(charSpan);
@@ -63,7 +67,7 @@ export function splitter(
         fragment.appendChild(spaceNode);
         spacerElements.push(spaceNode);
       } else {
-        const delimiterSpan = createSpan(`${charClass}-delimiter`);
+        const delimiterSpan = createSpan(`${charClass}-delimiter`, undefined, inline);
         delimiterSpan.textContent = splitBy;
         wordSpan.appendChild(delimiterSpan);
         splitElements.chars.push(delimiterSpan);
@@ -112,7 +116,7 @@ export function splitter(
   const finalFragment = document.createDocumentFragment();
 
   for (const { elements, lineIndex } of lines) {
-    const lineSpan = createSpan(lineClass, lineIndex);
+    const lineSpan = createSpan(lineClass, lineIndex, inline);
 
     splitElements.lines.push(lineSpan);
 

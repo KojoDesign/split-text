@@ -30,10 +30,10 @@ describe("splitText - Integration Tests", () => {
       expect(result.lines.length).toBeGreaterThan(0);
 
       // Verify all words are properly wrapped in spans
-      result.words.forEach((word) => {
+      for (const word of result.words) {
         expect(word.tagName).toBe("SPAN");
         expect(word.className).toBe("split-word");
-      });
+      }
     });
 
     it("should handle text with punctuation", () => {
@@ -76,25 +76,27 @@ describe("splitText - Integration Tests", () => {
       container.textContent = "Test multiple words here";
 
       const result = splitText("#classes-container", {
-        wordClass: "word-element",
-        charClass: "char-element",
-        lineClass: "line-element",
+        classNames: {
+          word: "word-element",
+          char: "char-element",
+          line: "line-element",
+        },
       });
 
       // Check all words have the correct class
-      result.words.forEach((word) => {
+      for (const word of result.words) {
         expect(word.className).toBe("word-element");
-      });
+      }
 
       // Check all chars have the correct class
-      result.chars.forEach((char) => {
+      for (const char of result.chars) {
         expect(char.className).toBe("char-element");
-      });
+      }
 
       // Check all lines have the correct class
-      result.lines.forEach((line) => {
+      for (const line of result.lines) {
         expect(line.className).toBe("line-element");
-      });
+      }
     });
 
     it("should handle class names with special characters", () => {
@@ -102,14 +104,60 @@ describe("splitText - Integration Tests", () => {
       container.textContent = "Test";
 
       const result = splitText("#special-class-container", {
-        wordClass: "word-class_with-special.chars",
-        charClass: "char-class_with-special.chars",
-        lineClass: "line-class_with-special.chars",
+        classNames: {
+          word: "word-class_with-special.chars",
+          char: "char-class_with-special.chars",
+          line: "line-class_with-special.chars",
+        },
       });
 
       expect(result.words[0]?.className).toBe("word-class_with-special.chars");
       expect(result.chars[0]?.className).toBe("char-class_with-special.chars");
       expect(result.lines[0]?.className).toBe("line-class_with-special.chars");
+    });
+  });
+
+  describe("display style options", () => {
+    it("should use inline-block display style by default", () => {
+      container.id = "default-display-container";
+      container.textContent = "Default display style";
+
+      const result = splitText("#default-display-container");
+
+      // Check that all elements use inline-block by default
+      for (const word of result.words) {
+        expect(word.style.display).toBe("inline-block");
+      }
+      
+      for (const char of result.chars) {
+        expect(char.style.display).toBe("inline-block");
+      }
+      
+      for (const line of result.lines) {
+        expect(line.style.display).toBe("inline-block");
+      }
+    });
+
+    it("should use inline display style when inline option is true", () => {
+      container.id = "inline-display-container";
+      container.textContent = "Inline display style";
+
+      const result = splitText("#inline-display-container", {
+        inline: true
+      });
+
+      // Check that all elements use inline when the option is set
+      for (const word of result.words) {
+        expect(word.style.display).toBe("inline");
+      }
+      
+      for (const char of result.chars) {
+        expect(char.style.display).toBe("inline");
+      }
+      
+      for (const line of result.lines) {
+        expect(line.style.display).toBe("inline");
+      }
     });
   });
 
@@ -151,7 +199,7 @@ describe("splitText - Integration Tests", () => {
 
   describe("performance and memory", () => {
     it("should handle large text efficiently", () => {
-      const largeText = "Lorem ipsum ".repeat(100) + "final word";
+      const largeText = `${"Lorem ipsum ".repeat(100)}final word`;
       container.id = "large-text-container";
       container.textContent = largeText;
 
@@ -171,17 +219,17 @@ describe("splitText - Integration Tests", () => {
       const result = splitText("#cleanup-container");
 
       // All returned elements should be properly connected to the DOM
-      result.words.forEach((word) => {
+      for (const word of result.words) {
         expect(word.isConnected).toBe(true);
-      });
+      }
 
-      result.chars.forEach((char) => {
+      for (const char of result.chars) {
         expect(char.isConnected).toBe(true);
-      });
+      }
 
-      result.lines.forEach((line) => {
+      for (const line of result.lines) {
         expect(line.isConnected).toBe(true);
-      });
+      }
     });
   });
 
@@ -207,10 +255,10 @@ describe("splitText - Integration Tests", () => {
       const result = splitText("#semantic-container");
 
       // Each character should still be readable
-      result.chars.forEach((char) => {
+      for (const char of result.chars) {
         expect(char.textContent).toBeTruthy();
         expect(char.textContent?.length).toBeGreaterThan(0);
-      });
+      }
     });
   });
 

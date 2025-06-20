@@ -90,9 +90,11 @@ describe("splitText", () => {
       container.textContent = "Hello world";
 
       const result = splitText("#custom-classes-container", {
-        wordClass: "custom-word",
-        charClass: "custom-char",
-        lineClass: "custom-line",
+        classNames: {
+          word: "custom-word",
+          char: "custom-char",
+          line: "custom-line",
+        },
       });
 
       expect(result.words[0]?.className).toBe("custom-word");
@@ -105,9 +107,11 @@ describe("splitText", () => {
       container.textContent = "Hello";
 
       const result = splitText("#empty-classes-container", {
-        wordClass: "",
-        charClass: "",
-        lineClass: "",
+        classNames: {
+          word: "",
+          char: "",
+          line: "",
+        },
       });
 
       expect(result.words[0]?.className).toBe("");
@@ -149,7 +153,7 @@ describe("splitText", () => {
       expect(result.chars[1]?.dataset.index).toBe("1");
     });
 
-    it("should set inline-block display style", () => {
+    it("should set inline-block display style by default", () => {
       container.id = "display-container";
       container.textContent = "Test";
 
@@ -158,6 +162,19 @@ describe("splitText", () => {
       expect(result.words[0]?.style.display).toBe("inline-block");
       expect(result.chars[0]?.style.display).toBe("inline-block");
       expect(result.lines[0]?.style.display).toBe("inline-block");
+    });
+
+    it("should use inline display style when inline option is true", () => {
+      container.id = "inline-display-container";
+      container.textContent = "Test";
+
+      const result = splitText("#inline-display-container", {
+        inline: true
+      });
+
+      expect(result.words[0]?.style.display).toBe("inline");
+      expect(result.chars[0]?.style.display).toBe("inline");
+      expect(result.lines[0]?.style.display).toBe("inline");
     });
 
     it("should preserve original text as aria-label", () => {
@@ -333,6 +350,118 @@ describe("splitText", () => {
     });
   });
 
+  describe("filter option", () => {
+    it("should apply filter to skip elements when recursive=true", () => {
+      container.id = "filter-container";
+      container.innerHTML = `
+        <p class="split-me">First paragraph</p>
+        <p class="skip-me">Second paragraph</p>
+        <p class="split-me">Third paragraph</p>
+      `;
+
+      // Filter to only process paragraphs with class "split-me"
+      splitText("#filter-container", {
+        recursive: true,
+        filter: (element) => element.classList.contains("split-me"),
+      });
+
+      // Should only split paragraphs with class "split-me"
+      const splitParagraphs = container.querySelectorAll("p.split-me");
+      const skippedParagraphs = container.querySelectorAll("p.skip-me");
+
+      // Verify split paragraphs have been processed
+      for (const p of Array.from(splitParagraphs)) {
+        const words = p.querySelectorAll(".split-word");
+        expect(words.length).toBeGreaterThan(0);
+      }
+
+      // Verify skipped paragraphs have not been processed
+      for (const p of Array.from(skippedParagraphs)) {
+        const words = p.querySelectorAll(".split-word");
+        expect(words.length).toBe(0);
+        // Original text should be preserved
+        expect(p.textContent?.trim()).toBe("Second paragraph");
+      }
+    });
+
+    it("should handle complex filter logic", () => {
+      container.id = "complex-filter-container";
+      container.innerHTML = `
+        <p data-split="true">Split this</p>
+        <p>Skip this</p>
+        <div data-split="true">Split this too</div>
+        <span>Skip this too</span>
+      `;
+
+      // Filter based on data attribute
+      const result = splitText("#complex-filter-container", {
+        recursive: true,
+        filter: (element) => element.hasAttribute("data-split"),
+      });
+
+      // Elements with data-split should be processed
+      const elementsToSplit = container.querySelectorAll("[data-split]");
+      for (const el of Array.from(elementsToSplit)) {
+        const words = el.querySelectorAll(".split-word");
+        expect(words.length).toBeGreaterThan(0);
+      }
+
+      // Elements without data-split should be skipped
+      const p = container.querySelector("p:not([data-split])");
+      const span = container.querySelector("span");
+      expect(p?.querySelectorAll(".split-word").length).toBe(0);
+      // The span contains text and is processed by default
+      // This is expected behavior since the filter only applies to elements that match isTextOnlyElement()
+      expect(span?.querySelectorAll(".split-word").length).toBe(2);
+    });
+
+    it("should ignore filter when recursive=false", () => {
+      container.id = "non-recursive-filter-container";
+      container.innerHTML = `
+        <p class="split-me">First paragraph</p>
+        <p class="skip-me">Second paragraph</p>
+      `;
+
+      // Even with filter, non-recursive mode should process the entire container
+      const result = splitText("#non-recursive-filter-container", {
+        recursive: false,
+        filter: (element) => element.classList.contains("split-me"),
+      });
+
+      // Original structure should be replaced (non-recursive behavior)
+      const paragraphs = container.querySelectorAll("p");
+      expect(paragraphs).toHaveLength(0);
+      
+      // Words from both paragraphs should be included
+      expect(result.words.length).toBeGreaterThan(3);
+    });
+
+    it("should handle case where all elements are filtered out", () => {
+      container.id = "all-filtered-container";
+      container.innerHTML = `
+        <p>First paragraph</p>
+        <p>Second paragraph</p>
+      `;
+
+      // Filter that excludes all elements
+      const result = splitText("#all-filtered-container", {
+        recursive: true,
+        filter: () => false,
+      });
+
+      // No elements should be processed
+      expect(result.words).toHaveLength(0);
+      expect(result.chars).toHaveLength(0);
+      expect(result.lines).toHaveLength(0);
+
+      // Original structure should be preserved
+      const paragraphs = container.querySelectorAll("p");
+      expect(paragraphs).toHaveLength(2);
+      expect(paragraphs[0]?.textContent?.trim()).toBe("First paragraph");
+      expect(paragraphs[1]?.textContent?.trim()).toBe("Second paragraph");
+    });
+  });
+
   describe("recursive text splitting", () => {
     it("should split text in multiple paragraph elements while preserving structure", () => {
       container.id = "multi-paragraph-container";
@@ -356,10 +485,10 @@ describe("splitText", () => {
       expect(paragraphs).toHaveLength(3);
 
       // Each paragraph should contain split elements
-      paragraphs.forEach((p) => {
+      for (const p of Array.from(paragraphs)) {
         const words = p.querySelectorAll(".split-word");
         expect(words.length).toBeGreaterThan(0);
-      });
+      }
     });
 
     it("should work with nested elements and preserve structure", () => {

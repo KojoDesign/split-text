@@ -13,7 +13,7 @@ A lightweight library for splitting text into individual characters, words, and 
 ## Installation
 
 ```bash
-bun install
+pnpm install
 ```
 
 ## Usage
@@ -68,10 +68,49 @@ const result = splitText("#container", { recursive: true });
 ```javascript
 splitText("#element", {
   splitBy: " ", // Character to split words by (default: ' ')
-  wordClass: "word", // CSS class for word spans (default: 'split-word')
-  charClass: "char", // CSS class for character spans (default: 'split-char')
-  lineClass: "line", // CSS class for line spans (default: 'split-line')
+  classNames: {
+    word: "word", // CSS class for word spans (default: 'split-word')
+    char: "char", // CSS class for character spans (default: 'split-char')
+    line: "line", // CSS class for line spans (default: 'split-line')
+  },
   recursive: false, // Split text in nested elements (default: false)
+  filter: (element) => boolean, // Filter function for recursive mode (default: undefined)
+  inline: false, // Use 'inline' instead of 'inline-block' for display style (default: false)
+});
+```
+
+#### Filter Option
+
+When using `recursive: true`, you can use the `filter` option to selectively process elements:
+
+```javascript
+// Only process paragraphs
+splitText("#container", {
+  recursive: true,
+  filter: (element) => element.tagName.toLowerCase() === "p"
+});
+
+// Skip elements with a specific class
+splitText("#container", {
+  recursive: true,
+  filter: (element) => !element.classList.contains("no-split")
+});
+
+// Only process elements with a specific data attribute
+splitText("#container", {
+  recursive: true,
+  filter: (element) => element.hasAttribute("data-split")
+});
+```
+
+#### Display Style
+
+By default, all split elements use `display: inline-block`. You can change this to `display: inline` with the `inline` option:
+
+```javascript
+// Use inline display style
+splitText("#element", {
+  inline: true
 });
 ```
 
@@ -84,7 +123,11 @@ import { splitText } from "@kojodesign/split-text";
 import { gsap } from "gsap";
 
 // Split text and animate characters
-const { chars } = splitText("#animated-text");
+const { chars } = splitText("#animated-text", {
+  classNames: {
+    char: "animated-char"
+  }
+});
 
 gsap.from(chars, {
   opacity: 0,
@@ -98,7 +141,12 @@ gsap.from(chars, {
 
 ```javascript
 // Animate all paragraphs in a container
-const { words } = splitText("#article", { recursive: true });
+const { words } = splitText("#article", { 
+  recursive: true,
+  classNames: {
+    word: "animated-word"
+  }
+});
 
 gsap.from(words, {
   opacity: 0,
@@ -113,13 +161,5 @@ gsap.from(words, {
 To run tests:
 
 ```bash
-bun test
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.9. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+pnpm test
+``

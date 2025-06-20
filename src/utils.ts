@@ -33,12 +33,16 @@ export function resolveElements(
 
 /**
  * Creates a span element with specified class and optional index attribute
+ * @param className - The class name to apply to the span
+ * @param index - Optional index to set as a data attribute
+ * @param inline - Whether to use 'inline' instead of 'inline-block' for display style
+ * @returns The created span element
  */
-export function createSpan(className: string, index?: number) {
+export function createSpan(className: string, index?: number, inline?: boolean) {
   const span = document.createElement("span");
   if (className) span.className = className;
   if (index !== undefined) span.dataset.index = index.toString();
-  span.style.display = "inline-block";
+  span.style.display = inline ? "inline" : "inline-block";
   return span;
 }
 
@@ -53,17 +57,28 @@ export function isTextOnlyElement(element: Element): boolean {
 
 /**
  * Recursively finds all elements that contain text and should be split
+ * @param container The container element to search within
+ * @param filter Optional callback to filter elements (return true to include, false to exclude)
+ * @returns Array of elements that should be split
  */
-export function findTextElements(container: Element): Element[] {
+export function findTextElements(
+  container: Element,
+  filter?: (node: Element) => boolean
+): Element[] {
   const textElements: Element[] = [];
-
-  // Find all leaf elements that contain only text
+  
   function traverse(element: Element) {
+    // Check if element contains only text and has non-empty content
     if (isTextOnlyElement(element) && element.textContent?.trim()) {
-      textElements.push(element);
-    } else {
-      // Traverse children
-      Array.from(element.children).forEach((child) => traverse(child));
+      // Only add the element if it passes the filter (or if no filter is provided)
+      if (!filter || filter(element)) {
+        textElements.push(element);
+      }
+    } else { 
+      // Recursively traverse child elements
+      for (const child of Array.from(element.children)) {
+        traverse(child);
+      }
     }
   }
 
