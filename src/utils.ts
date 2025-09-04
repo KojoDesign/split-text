@@ -59,6 +59,12 @@ export function isTextOnlyElement(element: Element): boolean {
   );
 }
 
+export function hasTextInElement(element: Element): boolean {
+  return Array.from(element.childNodes).some(
+    (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
+  );
+}
+
 /**
  * Recursively finds all elements that contain text and should be split
  * @param container The container element to search within

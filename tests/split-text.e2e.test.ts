@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { splitText } from "../src/index";
 
 describe("splitText - Integration Tests", () => {
@@ -128,11 +128,11 @@ describe("splitText - Integration Tests", () => {
       for (const word of result.words) {
         expect(word.style.display).toBe("inline-block");
       }
-      
+
       for (const char of result.chars) {
         expect(char.style.display).toBe("inline-block");
       }
-      
+
       for (const line of result.lines) {
         expect(line.style.display).toBe("inline-block");
       }
@@ -143,18 +143,18 @@ describe("splitText - Integration Tests", () => {
       container.textContent = "Inline display style";
 
       const result = splitText("#inline-display-container", {
-        inline: true
+        inline: true,
       });
 
       // Check that all elements use inline when the option is set
       for (const word of result.words) {
         expect(word.style.display).toBe("inline");
       }
-      
+
       for (const char of result.chars) {
         expect(char.style.display).toBe("inline");
       }
-      
+
       for (const line of result.lines) {
         expect(line.style.display).toBe("inline");
       }
@@ -348,7 +348,7 @@ describe("splitText - Integration Tests", () => {
       expect(
         result.words[0]
           ?.querySelector(".split-char")
-          ?.getAttribute("data-index"),
+          ?.getAttribute("data-index")
       ).toBe("0");
     });
   });

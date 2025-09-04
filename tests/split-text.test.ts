@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { splitText } from "../src/index";
 
 describe("splitText", () => {
@@ -169,7 +169,7 @@ describe("splitText", () => {
       container.textContent = "Test";
 
       const result = splitText("#inline-display-container", {
-        inline: true
+        inline: true,
       });
 
       expect(result.words[0]?.style.display).toBe("inline");
@@ -316,7 +316,7 @@ describe("splitText", () => {
       splitText("#delimiter-spans-container", { splitBy: "," });
 
       const delimiterSpans = container.querySelectorAll(
-        ".split-char-delimiter",
+        ".split-char-delimiter"
       );
       expect(delimiterSpans).toHaveLength(2); // Two commas
       expect(delimiterSpans[0]?.textContent).toBe(",");
@@ -431,7 +431,7 @@ describe("splitText", () => {
       // Original structure should be replaced (non-recursive behavior)
       const paragraphs = container.querySelectorAll("p");
       expect(paragraphs).toHaveLength(0);
-      
+
       // Words from both paragraphs should be included
       expect(result.words.length).toBeGreaterThan(3);
     });
