@@ -17,7 +17,7 @@
   "scripts": {
     "prepare": "bun run build",
     "build": "tsup src/index.ts --format esm,cjs,iife --dts --out-dir dist",
-    "test": "bun run test"
+    "test": "bun test"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^18.0.1",

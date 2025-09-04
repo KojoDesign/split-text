@@ -1,6 +1,6 @@
 import type {
-  ElementOrSelector,
   AnimationScope,
+  ElementOrSelector,
   SelectorCache,
   WithQuerySelectorAll,
 } from "./types";
@@ -48,60 +48,4 @@ export function createSpan(
   if (index !== undefined) span.dataset.index = index.toString();
   span.style.display = inline ? "inline" : "inline-block";
   return span;
-}
-
-/**
- * Checks if an element contains only text content (no child elements)
- */
-export function isTextOnlyElement(element: Element): boolean {
-  return Array.from(element.childNodes).every(
-    (node) => node.nodeType === Node.TEXT_NODE
-  );
-}
-
-export function hasTextInElement(element: Element): boolean {
-  return Array.from(element.childNodes).some(
-    (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
-  );
-}
-
-/**
- * Recursively finds all elements that contain text and should be split
- * @param container The container element to search within
- * @param filter Optional callback to filter elements (return true to include, false to exclude)
- * @returns Array of elements that should be split
- */
-export function findTextElements(
-  container: Element,
-  filter?: (node: Element) => boolean
-): Element[] {
-  const textElements: Element[] = [];
-
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: (node: Node) => {
-      const element = node as Element;
-
-      // Apply user filter first if provided
-      if (filter && !filter(element)) {
-        return NodeFilter.FILTER_REJECT;
-      }
-
-      // Check if element contains only text and has non-empty content
-      if (isTextOnlyElement(element) && element.textContent?.trim()) {
-        return NodeFilter.FILTER_ACCEPT;
-      }
-
-      // Skip this node but continue traversing its children
-      return NodeFilter.FILTER_SKIP;
-    },
-  });
-
-  let currentNode = walker.nextNode();
-
-  while (currentNode) {
-    textElements.push(currentNode as Element);
-    currentNode = walker.nextNode();
-  }
-
-  return textElements;
 }

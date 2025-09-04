@@ -6,11 +6,7 @@ import { createSpan } from "./utils";
  */
 export function splitter(
   element: Element,
-  {
-    splitBy = " ",
-    classNames = {},
-    inline,
-  }: Omit<SplitTextOptions, "recursive"> = {},
+  { splitBy = " ", classNames = {}, inline }: SplitTextOptions = {}
 ) {
   // Use classNames with defaults if properties are not provided
   const wordClass = classNames.word ?? "split-word";
@@ -67,7 +63,11 @@ export function splitter(
         fragment.appendChild(spaceNode);
         spacerElements.push(spaceNode);
       } else {
-        const delimiterSpan = createSpan(`${charClass}-delimiter`, undefined, inline);
+        const delimiterSpan = createSpan(
+          `${charClass}-delimiter`,
+          undefined,
+          inline
+        );
         delimiterSpan.textContent = splitBy;
         wordSpan.appendChild(delimiterSpan);
         splitElements.chars.push(delimiterSpan);

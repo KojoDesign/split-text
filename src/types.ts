@@ -8,7 +8,9 @@ export interface WithQuerySelectorAll {
   querySelectorAll: Element["querySelectorAll"];
 }
 
-export interface AnimationScope<T extends WithQuerySelectorAll = WithQuerySelectorAll> {
+export interface AnimationScope<
+  T extends WithQuerySelectorAll = WithQuerySelectorAll
+> {
   readonly current: T;
 }
 
@@ -25,7 +27,5 @@ export interface ClassNames {
 export interface SplitTextOptions {
   splitBy?: string;
   classNames?: ClassNames;
-  recursive?: boolean;
-  filter?: (node: Element) => boolean;
   inline?: boolean;
 }
